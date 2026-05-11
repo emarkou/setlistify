@@ -11,11 +11,11 @@ Works with **Claude Code** and **Claude Desktop**.
 ## Example
 
 ```
-You:    Create a playlist from Phoebe Bridgers' most recent show.
+You:    Create a playlist from Metallica's most recent show.
 
-Claude: Created "Phoebe Bridgers — Live Setlist (06-10-2023)"
-        Setlist from Red Rocks Amphitheatre, Morrison — 06-10-2023.
-        17/18 tracks matched.
+Claude: Created "Metallica — Live Setlist (09-01-2024)"
+        Setlist from Estadi Olímpic Lluís Companys, Barcelona — 09-01-2024.
+        21/22 tracks matched.
         → https://open.spotify.com/playlist/...
 ```
 
