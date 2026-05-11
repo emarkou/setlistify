@@ -1,48 +1,55 @@
 # setlistify
 
-A Python MCP server that connects [setlist.fm](https://setlist.fm) and Spotify to turn live concert setlists into Spotify playlists.
+> "Make me a Spotify playlist from Radiohead's last show" → done.
+
+An MCP server that connects [setlist.fm](https://setlist.fm) and Spotify. Tell Claude which artist and show you want — it fetches the real setlist, matches every track on Spotify, and creates the playlist.
+
+Works with **Claude Code** and **Claude Desktop**.
+
+---
+
+## Example
+
+```
+You:    Create a playlist from Phoebe Bridgers' most recent show.
+
+Claude: Created "Phoebe Bridgers — Live Setlist (06-10-2023)"
+        Setlist from Red Rocks Amphitheatre, Morrison — 06-10-2023.
+        17/18 tracks matched.
+        → https://open.spotify.com/playlist/...
+```
+
+```
+You:    Which songs does The National always play live vs. their rarities?
+
+Claude: Always played (last 10 shows): Bloodbuzz Ohio, Terrible Love, Mr. November
+        Rarities (played once): Sorrow, Available, Green Gloves
+        Never played live: 34 studio tracks
+```
+
+---
 
 ## What it does
 
 - Fetches real setlists from setlist.fm for any artist
 - Searches Spotify for each track with fuzzy matching for live variants
 - Creates a Spotify playlist and returns the URL
-- Supports "latest show" or "best-of" mode (aggregated by play frequency)
-- Can diff an artist's live setlists against their full studio discography
+- `mode="latest"` — most recent show
+- `mode="best-of"` — aggregates last N shows, ranks by play frequency
+- Diffs live setlists against full studio discography (always played / never played / rarities)
+
+---
 
 ## Tools
 
 ### `get_setlists(artist, year?, city?, limit?)`
 Browse recent setlists before creating a playlist.
 
-```
-get_setlists("Radiohead", year=2023, limit=3)
-```
-
 ### `create_playlist_from_setlist(artist, year?, venue?, city?, mode?)`
-Create a Spotify playlist from a setlist.
-
-- `mode="latest"` — most recent show (default)
-- `mode="best-of"` — aggregate last N shows, ranked by play frequency
-
-```
-create_playlist_from_setlist("Phoebe Bridgers", mode="best-of")
-create_playlist_from_setlist("The National", city="New York", mode="latest")
-```
-
-Returns: playlist URL, matched/unmatched track counts, source show details.
+Create a Spotify playlist from a setlist. Returns playlist URL, matched/unmatched track counts.
 
 ### `diff_setlist_vs_discography(artist)`
-Analyse last 10 setlists vs full Spotify discography.
-
-Returns:
-- `always_played` — every show without fail
-- `never_played_live` — studio tracks never performed
-- `rarities` — played only once in last 10 shows
-
-```
-diff_setlist_vs_discography("Arcade Fire")
-```
+Compare last 10 setlists against full Spotify discography.
 
 ---
 
@@ -51,17 +58,17 @@ diff_setlist_vs_discography("Arcade Fire")
 ### Prerequisites
 
 - Python 3.11+
-- A [setlist.fm API key](https://www.setlist.fm/settings/api) (free)
-- A [Spotify Developer app](https://developer.spotify.com/dashboard) (free)
+- [setlist.fm API key](https://www.setlist.fm/settings/api) — free
+- [Spotify Developer app](https://developer.spotify.com/dashboard) — free
 
-### 1. Clone and set up environment
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/emarkou/setlistify.git
 cd setlistify
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install mcp spotipy httpx python-dotenv
+pip install -r requirements.txt
 ```
 
 ### 2. Configure credentials
@@ -83,13 +90,19 @@ SPOTIFY_REDIRECT_URI=http://localhost:8888/callback
 
 **Spotify:**
 1. Go to https://developer.spotify.com/dashboard
-2. Create an app, select **Web API**
+2. Create an app → select **Web API**
 3. Add `http://localhost:8888/callback` as a Redirect URI
 4. Copy Client ID and Client Secret
 
 ### 3. Register with Claude Code
 
-Add to `~/.claude/mcp.json`:
+```bash
+claude mcp add setlistify \
+  /path/to/setlistify/.venv/bin/python \
+  -- /path/to/setlistify/server.py
+```
+
+Or add to `~/.claude/mcp.json`:
 
 ```json
 {
@@ -100,14 +113,6 @@ Add to `~/.claude/mcp.json`:
     }
   }
 }
-```
-
-Or use the CLI:
-
-```bash
-claude mcp add setlistify \
-  /path/to/setlistify/.venv/bin/python \
-  -- /path/to/setlistify/server.py
 ```
 
 ### 4. Register with Claude Desktop
@@ -133,13 +138,13 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ### 5. First run — Spotify OAuth
 
-On first use, a browser window opens for Spotify authorisation. Log in and allow access. The token is cached locally in `.cache` and reused automatically.
+On first use a browser window opens for Spotify authorisation. Log in and allow access. Token is cached locally in `.cache` and reused automatically.
 
 If auth expires, delete `.cache` and retry.
 
 ---
 
-## Test with MCP Inspector
+## Test without Claude
 
 ```bash
 npx @modelcontextprotocol/inspector \
@@ -159,6 +164,13 @@ setlistify/
 ├── setlistfm.py    # setlist.fm API client
 ├── spotify.py      # Spotify/spotipy wrapper
 ├── matching.py     # Fuzzy track title matching
-├── .env.example    # Credential template
-└── README.md
+├── requirements.txt
+├── .env.example
+└── LICENSE
 ```
+
+---
+
+## License
+
+MIT
