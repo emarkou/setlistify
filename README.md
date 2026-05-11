@@ -1,4 +1,7 @@
-# setlistify
+<div align="center">
+  <img src="docs/logo.png" alt="setlistify logo" width="120" />
+  <h1>setlistify</h1>
+</div>
 
 > "Make me a Spotify playlist from Radiohead's last show" → done.
 
