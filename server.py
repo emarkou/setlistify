@@ -105,7 +105,7 @@ def create_playlist_from_setlist(
     mbid = info["mbid"]
     artist_name: str = info.get("name", artist)
 
-    fetch_limit = 1 if mode == "latest" else n_setlists
+    fetch_limit = n_setlists if mode != "latest" else (20 if (city or venue) else 1)
     raw_setlists = setlistfm.search_artist_setlists(
         mbid, year=year, city=city, venue=venue, limit=fetch_limit
     )
@@ -113,6 +113,20 @@ def create_playlist_from_setlist(
         raise ValueError(f"No setlists found for '{artist_name}' with the given filters.")
 
     if mode == "latest":
+        if city or venue:
+            city_lower = city.lower() if city else None
+            venue_lower = venue.lower() if venue else None
+            for raw in raw_setlists:
+                p = setlistfm.parse_setlist(raw)
+                city_match = not city_lower or city_lower in p["city"].lower()
+                venue_match = not venue_lower or venue_lower in p["venue"].lower()
+                if city_match and venue_match and p["tracks"]:
+                    raw_setlists = [raw]
+                    break
+            else:
+                raise ValueError(
+                    f"No setlist with tracks found for '{artist_name}' matching city='{city}' venue='{venue}'."
+                )
         parsed = setlistfm.parse_setlist(raw_setlists[0])
         tracks_ordered = parsed["tracks"]
         playlist_name = f"{artist_name} — Live Setlist ({parsed['date']})"

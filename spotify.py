@@ -74,8 +74,7 @@ def get_album_tracks(album_id: str) -> list[dict]:
 
 def create_playlist(name: str, description: str, public: bool = True) -> dict:
     sp = _client()
-    uid = current_user_id()
-    return sp.user_playlist_create(uid, name, public=public, description=description)
+    return sp._post("me/playlists", payload={"name": name, "public": public, "description": description})
 
 
 def add_tracks_to_playlist(playlist_id: str, track_uris: list[str]) -> None:
